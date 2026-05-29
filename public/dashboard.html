@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Auth App</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        /* Dashboard-specific styles */
+        .container {
+            max-width: 550px;
+        }
+
+        .dashboard-greeting {
+            text-align: center;
+            margin-bottom: var(--spacing-8);
+        }
+
+        .dashboard-greeting h1 {
+            margin-bottom: var(--spacing-2);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            padding: var(--spacing-2) var(--spacing-4);
+            background: var(--success-bg);
+            color: #065f46;
+            border-radius: var(--radius-full);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .info-card {
+            background: var(--gray-50);
+            padding: var(--spacing-6);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--spacing-5);
+        }
+
+        .info-card h3 {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .info-card h3 svg {
+            color: var(--primary-color);
+        }
+
+        .user-detail {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+            padding: var(--spacing-3);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .user-detail:last-child {
+            margin-bottom: 0;
+        }
+
+        .user-detail .icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            color: var(--gray-600);
+        }
+
+        .user-detail .detail-info {
+            flex: 1;
+        }
+
+        .user-detail .detail-label {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-detail .detail-value {
+            font-size: var(--font-size-sm);
+            color: var(--gray-800);
+            font-weight: 500;
+        }
+
+        .token-display {
+            background: var(--white);
+            padding: var(--spacing-4);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--gray-200);
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: var(--font-size-xs);
+            color: var(--gray-600);
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-3);
+            margin-top: var(--spacing-6);
+        }
+
+        .action-buttons button {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-2);
+        }
+
+        /* Error state */
+        .error-container {
+            text-align: center;
+            padding: var(--spacing-8);
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--spacing-6);
+            background: var(--error-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--error-color);
+        }
+
+        .error-container h1 {
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-3);
+        }
+
+        .error-container .subtitle {
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-6);
+        }
+
+        /* Loading */
+        .loading-container {
+            text-align: center;
+            padding: var(--spacing-12) var(--spacing-8);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--spacing-6);
+        }
+
+        .loading-text {
+            color: var(--gray-500);
+            font-size: var(--font-size-sm);
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loading" class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Verifying your session...</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" class="hidden">
+            <div class="logo">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+
+            <div class="dashboard-greeting">
+                <h1>Dashboard</h1>
+                <div class="status-badge">
+                    <span>Authenticated</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    User Information
+                </h3>
+                <div class="user-detail">
+                    <div class="icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                    </div>
+                    <div class="detail-info">
+                        <div class="detail-label">Email Address</div>
+                        <div class="detail-value" id="userEmail">-</div>
+                    </div>
+                </div>
+                <div class="user-detail">
+                    <div class="icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="detail-info">
+                        <div class="detail-label">Session Status</div>
+                        <div class="detail-value" style="color: var(--success-color);">Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    JWT Token
+                </h3>
+                <div class="token-display" id="tokenDisplay">-</div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="refreshData()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"/>
+                        <path d="M1 20v-6h6"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    <span>Refresh</span>
+                </button>
+                <button class="btn-primary btn-danger" onclick="logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Logout</span>
+                </button>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorContent" class="hidden">
+            <div class="error-container">
+                <div class="error-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <h1>Access Denied</h1>
+                <p class="subtitle" id="errorMessage">You must be logged in to view this page.</p>
+                <button class="btn-primary" onclick="goToLogin()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    <span>Back to Login</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const messageDiv = document.getElementById('message');
+
+        // Check if user is logged in on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                showError('No authentication token found. Please login first.');
+                return;
+            }
+
+            try {
+                // Verify token with backend
+                const response = await fetch('http://localhost:3000/verify', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Token is valid, show dashboard
+                    showDashboard(data.email, token);
+                } else {
+                    // Token is invalid
+                    showError(data.message || 'Invalid token. Please login again.');
+                    localStorage.removeItem('token');
+                }
+            } catch (error) {
+                showError('Error connecting to server. Please try again.');
+            }
+        });
+
+        function showDashboard(email, token) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('dashboardContent').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = email;
+            document.getElementById('tokenDisplay').textContent = token;
+        }
+
+        function showError(message) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('errorContent').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function goToLogin() {
+            window.location.href = '../index.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '../index.html';
+        }
+
+        async function refreshData() {
+            const token = localStorage.getItem('token');
+            const refreshBtn = document.querySelector('.btn-secondary');
+            
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = `
+                <div class="spinner-small"></div>
+                <span>Refreshing...</span>
+            `;
+
+            try {
+                const response = await fetch('http://localhost:3000/verify', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('userEmail').textContent = data.email;
+                    showMessage('success', 'Data refreshed successfully!');
+                } else {
+                    showMessage('error', data.message || 'Failed to refresh');
+                }
+            } catch (error) {
+                showMessage('error', 'Error refreshing data');
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6"/>
+                        <path d="M1 20v-6h6"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    <span>Refresh</span>
+                `;
+            }
+        }
+
+        function showMessage(type, text) {
+            const icon = type === 'success' 
+                ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                   </svg>`
+                : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                   </svg>`;
+
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `${icon}<span>${text}</span>`;
+            messageDiv.style.display = 'flex';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

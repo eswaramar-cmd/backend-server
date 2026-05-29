@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Auth App</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        /* Page-specific overrides */
+        .container {
+            max-width: 450px;
+        }
+
+        .password-strength {
+            margin-top: var(--spacing-1);
+            font-size: var(--font-size-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+        }
+
+        .strength-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--gray-200);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all var(--transition-base);
+            border-radius: var(--radius-full);
+        }
+
+        .strength-text {
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .password-requirements {
+            background: var(--gray-50);
+            padding: var(--spacing-4);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-3);
+        }
+
+        .password-requirements p {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-1);
+        }
+
+        .password-requirements p:last-child {
+            margin-bottom: 0;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-2);
+        }
+
+        .requirement svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .requirement.met {
+            color: var(--success-color);
+        }
+
+        .requirement.unmet {
+            color: var(--gray-400);
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="logo">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        </div>
+
+        <h1>Create Account</h1>
+        <p class="subtitle">Sign up to get started with your dashboard</p>
+
+        <div class="auth-tabs">
+            <a href="../index.html" class="auth-tab">Login</a>
+            <a href="register.html" class="auth-tab active">Register</a>
+        </div>
+
+        <form id="registerForm" class="auth-form">
+            <div class="form-group">
+                <label for="email">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    Email Address
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="Enter your email" 
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Password
+                </label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    placeholder="Create a strong password" 
+                    required
+                    minlength="6"
+                    autocomplete="new-password"
+                >
+                <div class="password-strength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <span class="strength-text" id="strengthText"></span>
+                </div>
+                <div class="password-requirements">
+                    <p><strong>Password Requirements:</strong></p>
+                    <div class="requirement unmet" id="req-length">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                        <span>At least 6 characters</span>
+                    </div>
+                    <div class="requirement unmet" id="req-uppercase">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                        <span>One uppercase letter (recommended)</span>
+                    </div>
+                    <div class="requirement unmet" id="req-number">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                        <span>One number (recommended)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Confirm Password
+                </label>
+                <input 
+                    type="password" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    placeholder="Confirm your password" 
+                    required
+                    autocomplete="new-password"
+                >
+                <span id="matchMessage" style="font-size: var(--font-size-xs); color: var(--gray-400);"></span>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-primary">
+                <span>Create Account</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14"/>
+                    <path d="M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <p class="footer-text" style="margin-top: var(--spacing-6);">
+            By registering, you agree to our Terms of Service
+        </p>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById('registerForm');
+        const messageDiv = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const strengthFill = document.getElementById('strengthFill');
+        const strengthText = document.getElementById('strengthText');
+        const matchMessage = document.getElementById('matchMessage');
+
+        // Password strength checker
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            updatePasswordStrength(password);
+            checkMatch();
+        });
+
+        confirmPasswordInput.addEventListener('input', checkMatch);
+
+        function updatePasswordStrength(password) {
+            let strength = 0;
+            let level = '';
+            let color = '';
+
+            if (password.length >= 6) strength++;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+            if (password.length === 0) {
+                level = '';
+                color = 'var(--gray-200)';
+                strengthFill.style.width = '0%';
+            } else if (strength <= 2) {
+                level = 'Weak';
+                color = 'var(--error-color)';
+                strengthFill.style.width = '33%';
+            } else if (strength <= 4) {
+                level = 'Medium';
+                color = 'var(--warning-color)';
+                strengthFill.style.width = '66%';
+            } else {
+                level = 'Strong';
+                color = 'var(--success-color)';
+                strengthFill.style.width = '100%';
+            }
+
+            strengthFill.style.background = color;
+            strengthText.textContent = level;
+            strengthText.style.color = color;
+
+            // Update requirements
+            updateRequirement('req-length', password.length >= 6);
+            updateRequirement('req-uppercase', /[A-Z]/.test(password));
+            updateRequirement('req-number', /[0-9]/.test(password));
+        }
+
+        function updateRequirement(id, met) {
+            const el = document.getElementById(id);
+            if (met) {
+                el.className = 'requirement met';
+                el.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="16 9 10 15 8 13"/>
+                    </svg>
+                    <span>${el.querySelector('span').textContent}</span>
+                `;
+            } else {
+                el.className = 'requirement unmet';
+            }
+        }
+
+        function checkMatch() {
+            const password = passwordInput.value;
+            const confirm = confirmPasswordInput.value;
+
+            if (confirm.length === 0) {
+                matchMessage.textContent = '';
+                matchMessage.style.color = 'var(--gray-400)';
+                confirmPasswordInput.style.borderColor = 'var(--gray-200)';
+            } else if (password === confirm) {
+                matchMessage.textContent = '✓ Passwords match';
+                matchMessage.style.color = 'var(--success-color)';
+                confirmPasswordInput.style.borderColor = 'var(--success-color)';
+            } else {
+                matchMessage.textContent = '✗ Passwords do not match';
+                matchMessage.style.color = 'var(--error-color)';
+                confirmPasswordInput.style.borderColor = 'var(--error-color)';
+            }
+        }
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Client-side validation
+            if (password !== confirmPassword) {
+                showMessage('error', 'Passwords do not match');
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage('error', 'Password must be at least 6 characters');
+                return;
+            }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <span>Creating account...</span>
+                <div class="spinner-small"></div>
+            `;
+            messageDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:3000/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password, confirmPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok || response.status === 201) {
+                    // Success - Store token and redirect
+                    localStorage.setItem('token', data.token);
+                    
+                    showMessage('success', `${data.message} - Redirecting...`);
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+                } else {
+                    showMessage('error', data.message || 'Registration failed');
+                }
+            } catch (error) {
+                showMessage('error', 'Error connecting to server. Make sure the backend is running.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <span>Create Account</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"/>
+                        <path d="M12 5l7 7-7 7"/>
+                    </svg>
+                `;
+            }
+        });
+
+        function showMessage(type, text) {
+            const icon = type === 'success' 
+                ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                   </svg>`
+                : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                   </svg>`;
+
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `${icon}<span>${text}</span>`;
+            messageDiv.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
