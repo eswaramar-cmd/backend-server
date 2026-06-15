@@ -109,7 +109,7 @@ body {
     height: 100%;
     z-index: -1;
     overflow: hidden;
-    background: linear-gradient(135deg, #a386ab 0%, #000000 100%);
+    background: linear-gradient(135deg, #b6d7f5 0%, #e0ddda 100%);
 }
 
 .background .shape {

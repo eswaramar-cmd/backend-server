@@ -2,191 +2,137 @@ const express = require('express')
 const cors = require('cors')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const path = require('path')
+const fs = require('fs')
 
 const app = express()
+const PORT = process.env.PORT || 3000
+const distPath = path.join(__dirname, 'dashboard', 'dist')
 
 app.use(express.json())
 app.use(cors())
 
-// Serve static files from public folder
-app.use(express.static('public'))
-
-// In-memory user storage (simulates a database)
+// In-memory user storage
 const users = []
 
-// Pre-add a default user for testing
 users.push({
    email: "amar@gmail.com",
    password: "$2b$10$UQw2N6G5NP8jkr.0WEaAuuny7XKMEJErVBF0.vhPkcTChIMhIRqGS"
 })
 
-// Home Route - redirect to login page
-app.get('/', (req,res)=>{
-   res.sendFile(__dirname + '/public/index.html')
-})
-
-// Dashboard Route - serve dashboard page
-app.get('/dashboard', (req,res)=>{
-   res.sendFile(__dirname + '/public/dashboard.html')
-})
-
-// Register Route - serve registration page
-app.get('/register', (req,res)=>{
-   res.sendFile(__dirname + '/public/register.html')
-})
-
-// Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
-   // Get token from Authorization header
    const authHeader = req.headers['authorization']
-   const token = authHeader && authHeader.split(' ')[1] // Bearer TOKEN
+   const token = authHeader && authHeader.split(' ')[1]
 
    if (!token) {
-      return res.status(401).json({
-         message: "Access denied. No token provided."
-      })
+      return res.status(401).json({ message: "Access denied. No token provided." })
    }
 
    try {
-      // Verify token
-      const verified = jwt.verify(token, "secretkey")
-      req.user = verified
+      req.user = jwt.verify(token, "secretkey")
       next()
    } catch (err) {
-      res.status(400).json({
-         message: "Invalid token"
-      })
+      res.status(401).json({ message: "Invalid or expired token" })
    }
 }
 
-// Verify Token Route - returns user info if token is valid
+// ——— API routes (must be before static / SPA) ———
+
 app.get('/verify', verifyToken, (req, res) => {
-   res.json({
-      message: "Token is valid",
-      email: req.user.email
-   })
+   res.json({ message: "Token is valid", email: req.user.email })
 })
 
-// Register Route
-app.post('/register', async (req,res)=>{
+app.post('/register', async (req, res) => {
+   try {
+      const { email, password, confirmPassword } = req.body
 
-   try{
-
-      const {email,password,confirmPassword} = req.body
-
-      // Validation
-      if(!email || !password){
-         return res.status(400).json({
-            message:"Email and password are required"
-         })
+      if (!email || !password) {
+         return res.status(400).json({ message: "Email and password are required" })
       }
 
-      // Check if email already exists
-      const existingUser = users.find(u => u.email === email)
-      if(existingUser){
-         return res.status(400).json({
-            message:"Email already registered"
-         })
+      if (users.find(u => u.email === email)) {
+         return res.status(400).json({ message: "Email already registered" })
       }
 
-      // Check password length
-      if(password.length < 6){
-         return res.status(400).json({
-            message:"Password must be at least 6 characters"
-         })
+      if (password.length < 6) {
+         return res.status(400).json({ message: "Password must be at least 6 characters" })
       }
 
-      // Check passwords match
-      if(password !== confirmPassword){
-         return res.status(400).json({
-            message:"Passwords do not match"
-         })
+      if (password !== confirmPassword) {
+         return res.status(400).json({ message: "Passwords do not match" })
       }
 
-      // Hash password
-      const salt = await bcrypt.genSalt(10)
-      const hashedPassword = await bcrypt.hash(password, salt)
-
-      // Save user
-      const newUser = {
-         email: email,
-         password: hashedPassword
-      }
-
+      const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10))
+      const newUser = { email, password: hashedPassword }
       users.push(newUser)
 
-      // Create JWT token
-      const token = jwt.sign(
-         {email:newUser.email},
-         "secretkey",
-         {expiresIn:'1d'}
-      )
+      const token = jwt.sign({ email: newUser.email }, "secretkey", { expiresIn: '1d' })
 
-      res.status(201).json({
-         message:"Registration successful",
-         token
-      })
-
-   } catch(err){
-
-      res.status(500).json({
-         message: err.message
-      })
-
+      res.status(201).json({ message: "Registration successful", token })
+   } catch (err) {
+      res.status(500).json({ message: err.message })
    }
-
 })
 
-// Login Route
-app.post('/login', async (req,res)=>{
-
-   try{
-
-      const {email,password} = req.body
-
-      // Find user by email
+app.post('/login', async (req, res) => {
+   try {
+      const { email, password } = req.body
       const user = users.find(u => u.email === email)
 
-      if(!user){
-         return res.status(400).json({
-            message:"Invalid Email"
-         })
+      if (!user) {
+         return res.status(400).json({ message: "Invalid Email" })
       }
 
-      // Compare password
-      const isMatch = await bcrypt.compare(
-         password,
-         user.password
-      )
-
-      if(!isMatch){
-         return res.status(400).json({
-            message:"Invalid Password"
-         })
+      const isMatch = await bcrypt.compare(password, user.password)
+      if (!isMatch) {
+         return res.status(400).json({ message: "Invalid Password" })
       }
 
-      // Create JWT token
-      const token = jwt.sign(
-         {email:user.email},
-         "secretkey",
-         {expiresIn:'1d'}
-      )
-
-      res.json({
-         message:"Login Success",
-         token
-      })
-
-   } catch(err){
-
-      res.status(500).json({
-         message: err.message
-      })
-
+      const token = jwt.sign({ email: user.email }, "secretkey", { expiresIn: '1d' })
+      res.json({ message: "Login Success", token })
+   } catch (err) {
+      res.status(500).json({ message: err.message })
    }
-
 })
 
-app.listen(3000,()=>{
-   console.log("Server Running On Port 3000")
+// ——— React production build ———
+
+function distExists() {
+   return fs.existsSync(path.join(distPath, 'index.html'))
+}
+
+if (distExists()) {
+   app.use(express.static(distPath))
+
+   // SPA fallback (Express 5 does not support app.get('*', ...))
+   app.use((req, res, next) => {
+      if (req.method !== 'GET') return next()
+
+      if (path.extname(req.path) && !req.path.endsWith('.html')) {
+         return res.status(404).send('Not found')
+      }
+
+      res.sendFile(path.join(distPath, 'index.html'), (err) => {
+         if (err) next(err)
+      })
+   })
+} else {
+   app.use((req, res) => {
+      res.status(503).send(
+         'Frontend not built. Run: npm run build:app — then restart the server.'
+      )
+   })
+}
+
+app.use((err, req, res, next) => {
+   console.error(err)
+   res.status(500).json({ message: 'Internal server error' })
+})
+
+app.listen(PORT, () => {
+   console.log(`Server Running On Port ${PORT}`)
+   console.log(`Open http://localhost:${PORT}`)
+   if (!distExists()) {
+      console.warn('Warning: dashboard/dist missing — run npm run build:app')
+   }
 })
